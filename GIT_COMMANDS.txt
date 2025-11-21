@@ -1,0 +1,66 @@
+# دستورات Git برای آپلود پروژه
+
+## روش 1: استفاده از اسکریپت (پیشنهادی)
+
+### Windows:
+push_to_git.bat
+
+### Linux/Mac:
+chmod +x push_to_git.sh
+./push_to_git.sh
+
+---
+
+## روش 2: دستی
+
+### مرحله 1: Initialize
+git init
+
+### مرحله 2: Add files
+git add .
+
+### مرحله 3: بررسی فایل‌ها
+git status
+
+### مرحله 4: Commit
+git commit -m "Initial commit: Telegram bot for channel management"
+
+### مرحله 5: Set main branch
+git branch -M main
+
+### مرحله 6: Add remote
+git remote add origin https://github.com/D-speedster/Telegram_Channel.git
+
+### مرحله 7: Push
+git push -u origin main
+
+---
+
+## نکات مهم:
+
+1. فایل .env به گیت نمی‌رود (در .gitignore است)
+2. تمام فایل‌های .md به گیت نمی‌روند
+3. فایل‌های دیتابیس به گیت نمی‌روند
+4. فایل‌های بنر به گیت نمی‌روند
+5. فایل‌های __pycache__ به گیت نمی‌روند
+
+## فایل‌هایی که به گیت می‌روند:
+
+- src/ (تمام کدهای پایتون)
+- .env.example
+- .gitignore
+- .gitattributes
+- requirements.txt
+- run.sh
+- run.bat
+- run_here.bat
+- Makefile
+- data/database/.gitkeep
+- data/banners/.gitkeep
+
+## بعد از Push:
+
+مطمئن شوید که:
+1. فایل .env در گیت نیست
+2. توکن ربات در گیت نیست
+3. شناسه‌های ادمین در گیت نیست
