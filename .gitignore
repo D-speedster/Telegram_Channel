@@ -45,7 +45,6 @@ logs/
 *.db
 *.sqlite
 *.sqlite3
-data/database/*.db
 
 # OS
 .DS_Store
@@ -56,12 +55,10 @@ bot.session
 bot.session-journal
 *.session
 
-# Documentation (exclude all .md files)
-*.md
-
-# Data files
+# Data
 data/banners/*
 !data/banners/.gitkeep
+data/database/*.db
 
 # Test files
 test_*.py
