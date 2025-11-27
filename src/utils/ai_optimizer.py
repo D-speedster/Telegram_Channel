@@ -1,8 +1,8 @@
 """
-AI Post Optimizer - بهینه‌سازی پست با Gemini AI
+AI Post Optimizer - بهینه‌سازی پست با Liara AI
 """
 import logging
-from google import genai
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
@@ -26,24 +26,29 @@ PROMPT_TEMPLATE = """**نقش شما:** شما یک متخصص بازاریاب�
 
 
 class AIOptimizer:
-    """کلاس برای بهینه‌سازی پست‌ها با Gemini AI"""
+    """کلاس برای بهینه‌سازی پست‌ها با Liara AI"""
     
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str = None, base_url: str = None):
         """
         Initialize AI Optimizer
         
         Args:
-            api_key: Gemini API key (optional, can be set via GEMINI_API_KEY env var)
+            api_key: Liara API key
+            base_url: Liara base URL
         """
         try:
-            if api_key:
-                self.client = genai.Client(api_key=api_key)
-            else:
-                # خواندن از متغیر محیطی
-                self.client = genai.Client()
-            logger.info("Gemini AI client initialized successfully")
+            if not api_key or not base_url:
+                logger.error("API key or base URL not provided")
+                self.client = None
+                return
+                
+            self.client = OpenAI(
+                base_url=base_url,
+                api_key=api_key
+            )
+            logger.info("Liara AI client initialized successfully")
         except Exception as e:
-            logger.error(f"Error initializing Gemini client: {e}")
+            logger.error(f"Error initializing Liara AI client: {e}")
             self.client = None
     
     def optimize_post(self, raw_content: str) -> tuple[bool, str]:
@@ -66,15 +71,20 @@ class AIOptimizer:
             # ساخت پرامپت نهایی
             final_prompt = PROMPT_TEMPLATE.format(user_post_text=raw_content)
             
-            logger.info(f"Sending request to Gemini for optimization (length: {len(raw_content)})")
+            logger.info(f"Sending request to Liara AI for optimization (length: {len(raw_content)})")
             
-            # ارسال به Gemini
-            response = self.client.models.generate_content(
-                model='gemini-1.5-flash',  # استفاده از مدل stable با سهمیه بیشتر
-                contents=final_prompt
+            # ارسال به Liara AI
+            completion = self.client.chat.completions.create(
+                model='openai/gpt-4o-mini',
+                messages=[
+                    {
+                        'role': 'user',
+                        'content': final_prompt
+                    }
+                ]
             )
             
-            optimized_text = response.text.strip()
+            optimized_text = completion.choices[0].message.content.strip()
             
             logger.info(f"Successfully optimized post (output length: {len(optimized_text)})")
             
@@ -82,17 +92,20 @@ class AIOptimizer:
             
         except Exception as e:
             error_str = str(e)
-            logger.error(f"Error in Gemini API call: {error_str}")
+            logger.error(f"Error in Liara AI API call: {error_str}")
             
             # بررسی خطای rate limit
-            if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str:
+            if '429' in error_str or 'rate_limit' in error_str.lower():
                 return False, (
-                    "⚠️ سهمیه API تمام شده است.\n\n"
-                    "💡 راه‌حل‌ها:\n"
-                    "1️⃣ چند دقیقه صبر کنید و دوباره تلاش کنید\n"
-                    "2️⃣ از یک API key دیگر استفاده کنید\n"
-                    "3️⃣ پلن خود را ارتقا دهید\n\n"
-                    "📊 مدیریت سهمیه: https://ai.dev/usage"
+                    "⚠️ محدودیت تعداد درخواست.\n\n"
+                    "💡 لطفاً چند لحظه صبر کنید و دوباره تلاش کنید."
+                )
+            
+            # بررسی خطای authentication
+            if '401' in error_str or 'unauthorized' in error_str.lower():
+                return False, (
+                    "❌ خطای احراز هویت.\n\n"
+                    "لطفاً API Key را بررسی کنید."
                 )
             
             return False, f"❌ خطا در پردازش هوش مصنوعی:\n{error_str[:200]}"

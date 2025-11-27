@@ -48,10 +48,12 @@ PORT = int(os.getenv("PORT", "8443"))
 DEFAULT_REPLY_MARKUP = None # Example: ReplyKeyboardMarkup(...)
 DEFAULT_PARSE_MODE = 'HTML'
 
-# --- Gemini AI Configuration ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    print("Warning: GEMINI_API_KEY is not set. AI post optimization will not work.")
+# --- Liara AI Configuration ---
+LIARA_API_KEY = os.getenv("LIARA_API_KEY")
+LIARA_BASE_URL = os.getenv("LIARA_BASE_URL", "https://ai.liara.ir/api/68ae0945c6240ade70e8e22b/v1")
+
+if not LIARA_API_KEY:
+    print("Warning: LIARA_API_KEY is not set. AI post optimization will not work.")
 
 # --- Banner Settings ---
 # Example of how you might want to list banners

@@ -13,7 +13,7 @@ from telegram.ext import (
 from src.utils.validators import admin_only
 from src.utils.keyboards import confirm_keyboard, channel_menu_keyboard
 from src.utils.ai_optimizer import AIOptimizer
-from src.config import GEMINI_API_KEY
+from src.config import LIARA_API_KEY, LIARA_BASE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 WAITING_FOR_RAW_CONTENT, WAITING_FOR_CONFIRMATION = range(2)
 
 # Initialize AI Optimizer
-ai_optimizer = AIOptimizer(api_key=GEMINI_API_KEY)
+ai_optimizer = AIOptimizer(api_key=LIARA_API_KEY, base_url=LIARA_BASE_URL)
 
 
 @admin_only
