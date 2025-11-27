@@ -37,42 +37,56 @@ def extract_movie_info(caption: str) -> dict:
         'quality': '720p'  # مقدار پیش‌فرض
     }
     
-    # استخراج نام فیلم و سال
-    name_line_match = re.search(r'🎥فیلم\s*(.+?)(?:\n|$)', caption)
-    if name_line_match:
-        full_name = name_line_match.group(1).strip()
-        
-        # استخراج سال (اولین عدد 4 رقمی)
-        year_match = re.search(r'\((\d{4})', full_name)
-        if year_match:
-            info['year'] = year_match.group(1)
-        
-        # استخراج نام انگلیسی
-        # فرمت: (April..s Daug..hter Las hij..as de Ab..ril (2017 (دختر ماه آوریل)
-        name_clean = full_name.lstrip('(').strip()
-        
-        # حذف قسمت (سال) و بعد از آن
-        if year_match:
-            year_pos = name_clean.find(f"({info['year']}")
-            if year_pos > 0:
-                name_clean = name_clean[:year_pos].strip()
-        
-        # حذف نقطه‌های اضافی
-        name_clean = re.sub(r'\.\.', '', name_clean)
-        info['name'] = name_clean.strip()
+    # استخراج نام انگلیسی (فرمت جدید: 📺The Butterfly Tree (2017))
+    english_name_match = re.search(r'📺\s*(.+?)\s*\((\d{4})\)', caption)
+    if english_name_match:
+        info['name'] = english_name_match.group(1).strip()
+        info['year'] = english_name_match.group(2).strip()
+    else:
+        # فرمت قدیمی: 🎥فیلم
+        name_line_match = re.search(r'🎥فیلم\s*(.+?)(?:\n|$)', caption)
+        if name_line_match:
+            full_name = name_line_match.group(1).strip()
+            
+            # استخراج سال (اولین عدد 4 رقمی)
+            year_match = re.search(r'\((\d{4})', full_name)
+            if year_match:
+                info['year'] = year_match.group(1)
+            
+            # استخراج نام انگلیسی
+            name_clean = full_name.lstrip('(').strip()
+            
+            # حذف قسمت (سال) و بعد از آن
+            if year_match:
+                year_pos = name_clean.find(f"({info['year']}")
+                if year_pos > 0:
+                    name_clean = name_clean[:year_pos].strip()
+            
+            # حذف نقطه‌های اضافی
+            name_clean = re.sub(r'\.\.', '', name_clean)
+            info['name'] = name_clean.strip()
     
-    # استخراج ژانر
-    genre_match = re.search(r'📽ژانر:\s*(.+?)(?:\n|$)', caption)
+    # استخراج ژانر (فرمت‌های مختلف)
+    genre_match = re.search(r'[📽🎞]\s*ژانر\s*[:：]\s*(.+?)(?:\n|$)', caption)
     if genre_match:
         info['genre'] = genre_match.group(1).strip()
     
-    # استخراج زبان (پشتیبانی از 📄 و 📃)
-    lang_match = re.search(r'[📄📃]زبان:\s*(.+?)(?:\n|$)', caption)
+    # استخراج زبان (فرمت‌های مختلف)
+    lang_match = re.search(r'[📄📃📝]\s*#?زیرنویس[_\s]*چسبیده', caption, re.IGNORECASE)
     if lang_match:
-        info['language'] = lang_match.group(1).strip()
+        info['language'] = 'زیرنویس چسبیده'
+    else:
+        lang_match = re.search(r'[📄📃]زبان:\s*(.+?)(?:\n|$)', caption)
+        if lang_match:
+            info['language'] = lang_match.group(1).strip()
     
-    # استخراج امتیاز (با پشتیبانی از اعداد فارسی و ایموجی‌های مختلف)
-    score_match = re.search(r'[⭐️⭐]امتیاز\s*([۰-۹0-9\.]+)\s*از\s*([۰-۹0-9]+)', caption)
+    # استخراج امتیاز (فرمت‌های مختلف)
+    # فرمت 1: ⭐️ امتیاز :5.3 /10 IMDB
+    score_match = re.search(r'[⭐️⭐]\s*امتیاز\s*[:：]\s*([۰-۹0-9\.]+)\s*/\s*([۰-۹0-9]+)', caption)
+    if not score_match:
+        # فرمت 2: ⭐️امتیاز ۶.۵ از ۱۰
+        score_match = re.search(r'[⭐️⭐]امتیاز\s*([۰-۹0-9\.]+)\s*از\s*([۰-۹0-9]+)', caption)
+    
     if score_match:
         score = score_match.group(1).strip()
         total = score_match.group(2).strip()
@@ -121,8 +135,10 @@ def extract_movie_info(caption: str) -> dict:
     else:
         info['quality'] = quality_match.group(1).strip()
     
-    # استخراج خلاصه داستان
-    summary_match = re.search(r'خلاصه داستان:\s*(.+?)$', caption, re.DOTALL)
+    # استخراج خلاصه داستان (فرمت‌های مختلف)
+    summary_match = re.search(r'[✍️📝]\s*خلاصه داستان\s*[:：]\s*(.+?)$', caption, re.DOTALL)
+    if not summary_match:
+        summary_match = re.search(r'خلاصه داستان:\s*(.+?)$', caption, re.DOTALL)
     if summary_match:
         info['summary'] = summary_match.group(1).strip()
     
