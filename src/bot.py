@@ -3,7 +3,13 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
 # Import handlers
-from src.handlers.start_handler import start as start_admin, back_to_main_menu, handle_main_menu_buttons
+from src.handlers.start_handler import (
+    start as start_admin, 
+    back_to_main_menu, 
+    handle_main_menu_buttons,
+    handle_channel_selection,
+    handle_back_to_channels
+)
 from src.handlers.post_handler import post_creation_handler
 from src.handlers.admin_handlers import admin_management_handler, admin_panel
 from src.handlers.movie_design_handler import movie_design_handler
@@ -47,9 +53,13 @@ def main() -> None:
     # Add callback query handlers
     application.add_handler(CallbackQueryHandler(back_to_main_menu, pattern='^back_to_main_menu$'))
     
+    # Add message handlers for channel selection
+    application.add_handler(MessageHandler(filters.Regex('^🎬 کانال فیلم$'), handle_channel_selection))
+    application.add_handler(MessageHandler(filters.Regex('^🇮🇹 کانال ایتالیا$'), handle_channel_selection))
+    application.add_handler(MessageHandler(filters.Regex('^🔙 بازگشت به انتخاب کانال$'), handle_back_to_channels))
+    
     # Add message handler for main menu buttons
     application.add_handler(MessageHandler(filters.Regex('^⚙️ مدیریت انواع پست$'), handle_main_menu_buttons))
-    application.add_handler(MessageHandler(filters.Regex('^📊 آمار و گزارش$'), handle_main_menu_buttons))
 
     # Register the error handler
     application.add_error_handler(error_handler)

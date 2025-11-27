@@ -144,7 +144,7 @@ def extract_movie_info(caption: str) -> dict:
     
     return info
 
-def create_formatted_caption(info: dict) -> str:
+def create_formatted_caption(info: dict, channel_link: str = 'https://t.me/Film_Too_Film') -> str:
     """ساخت کپشن فرمت شده بر اساس قالب"""
     caption = f"""Download 🔞#Film_Nights🔞
 
@@ -157,18 +157,18 @@ def create_formatted_caption(info: dict) -> str:
 
 {info['summary']}
 
-🔗 https://t.me/Film_Maamnooe"""
+🔗 {channel_link}"""
     
     return caption
 
-def create_file_caption(info: dict) -> str:
+def create_file_caption(info: dict, channel_link: str = 'https://t.me/Film_Too_Film') -> str:
     """ساخت کپشن برای فایل"""
     quality = info.get('quality', '720p')
     caption = f"""🟧 {info['name']}
 🟥 Quality: {quality}
 🟦 Language: 《زیرنویس چسبیده》
 
-🔗 https://t.me/Film_Maamnooe"""
+🔗 {channel_link}"""
     
     return caption
 
@@ -177,10 +177,21 @@ def create_file_caption(info: dict) -> str:
 @admin_only
 async def start_movie_design(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """شروع فرآیند دیزاین پست فیلم"""
-    logger.info(f"Admin {update.effective_user.id} started movie design.")
+    # بررسی انتخاب کانال
+    selected_channel = context.user_data.get('selected_channel')
+    channel_name = context.user_data.get('channel_name', 'کانال')
+    
+    if not selected_channel:
+        await update.message.reply_text(
+            "⚠️ لطفاً ابتدا یک کانال انتخاب کنید.\n"
+            "از منوی اصلی کانال مورد نظر را انتخاب کنید."
+        )
+        return ConversationHandler.END
+    
+    logger.info(f"Admin {update.effective_user.id} started movie design for {channel_name}.")
     
     await update.message.reply_text(
-        "📽 دیزاین پست فیلم\n\n"
+        f"📽 دیزاین پست فیلم برای {channel_name}\n\n"
         "لطفاً پست فیلم خود را ارسال کنید.\n"
         "پست باید شامل تصویر و کپشن با اطلاعات فیلم باشد."
     )
@@ -214,8 +225,15 @@ async def receive_movie_post(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # ذخیره اطلاعات
     context.user_data['movie_info'] = movie_info
     
+    # دریافت لینک کانال
+    from src.utils.channel_manager import get_channel_info
+    selected_channel = context.user_data.get('selected_channel', 'film')
+    channel_info = get_channel_info(selected_channel)
+    channel_link = channel_info.get('link', 'https://t.me/Film_Too_Film')
+    context.user_data['channel_link'] = channel_link
+    
     # ساخت کپشن فرمت شده
-    formatted_caption = create_formatted_caption(movie_info)
+    formatted_caption = create_formatted_caption(movie_info, channel_link)
     context.user_data['formatted_caption'] = formatted_caption
     
     # نمایش پیش‌نمایش
@@ -248,7 +266,8 @@ async def handle_first_confirm(update: Update, context: ContextTypes.DEFAULT_TYP
     await query.edit_message_reply_markup(reply_markup=None)
     
     movie_info = context.user_data.get('movie_info', {})
-    file_caption = create_file_caption(movie_info)
+    channel_link = context.user_data.get('channel_link', 'https://t.me/Film_Too_Film')
+    file_caption = create_file_caption(movie_info, channel_link)
     context.user_data['file_caption'] = file_caption
     
     await context.bot.send_message(
