@@ -48,6 +48,11 @@ PORT = int(os.getenv("PORT", "8443"))
 DEFAULT_REPLY_MARKUP = None # Example: ReplyKeyboardMarkup(...)
 DEFAULT_PARSE_MODE = 'HTML'
 
+# --- Gemini AI Configuration ---
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    print("Warning: GEMINI_API_KEY is not set. AI post optimization will not work.")
+
 # --- Banner Settings ---
 # Example of how you might want to list banners
 def get_banner_list():

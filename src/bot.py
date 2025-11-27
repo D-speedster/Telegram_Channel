@@ -10,6 +10,7 @@ from src.handlers.start_handler import (
     handle_channel_selection,
     handle_back_to_channels
 )
+from src.handlers.ai_post_handler import ai_post_handler
 from src.handlers.post_handler import post_creation_handler
 from src.handlers.admin_handlers import admin_management_handler, admin_panel
 from src.handlers.movie_design_handler import movie_design_handler
@@ -46,6 +47,7 @@ def main() -> None:
     application.add_handler(CommandHandler("admin", admin_panel))
     
     # Add conversation handlers
+    application.add_handler(ai_post_handler)  # AI post handler (higher priority)
     application.add_handler(post_creation_handler)
     application.add_handler(admin_management_handler)
     application.add_handler(movie_design_handler)
