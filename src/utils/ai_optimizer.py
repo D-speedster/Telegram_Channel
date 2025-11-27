@@ -70,7 +70,7 @@ class AIOptimizer:
             
             # ارسال به Gemini
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash-exp',
+                model='gemini-1.5-flash',  # استفاده از مدل stable با سهمیه بیشتر
                 contents=final_prompt
             )
             
@@ -81,8 +81,21 @@ class AIOptimizer:
             return True, optimized_text
             
         except Exception as e:
-            logger.error(f"Error in Gemini API call: {e}")
-            return False, f"❌ خطا در پردازش هوش مصنوعی: {str(e)}"
+            error_str = str(e)
+            logger.error(f"Error in Gemini API call: {error_str}")
+            
+            # بررسی خطای rate limit
+            if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str:
+                return False, (
+                    "⚠️ سهمیه API تمام شده است.\n\n"
+                    "💡 راه‌حل‌ها:\n"
+                    "1️⃣ چند دقیقه صبر کنید و دوباره تلاش کنید\n"
+                    "2️⃣ از یک API key دیگر استفاده کنید\n"
+                    "3️⃣ پلن خود را ارتقا دهید\n\n"
+                    "📊 مدیریت سهمیه: https://ai.dev/usage"
+                )
+            
+            return False, f"❌ خطا در پردازش هوش مصنوعی:\n{error_str[:200]}"
     
     def is_available(self) -> bool:
         """بررسی در دسترس بودن سرویس"""
