@@ -177,21 +177,10 @@ def create_file_caption(info: dict, channel_link: str = 'https://t.me/Film_Too_F
 @admin_only
 async def start_movie_design(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """شروع فرآیند دیزاین پست فیلم"""
-    # بررسی انتخاب کانال
-    selected_channel = context.user_data.get('selected_channel')
-    channel_name = context.user_data.get('channel_name', 'کانال')
-    
-    if not selected_channel:
-        await update.message.reply_text(
-            "⚠️ لطفاً ابتدا یک کانال انتخاب کنید.\n"
-            "از منوی اصلی کانال مورد نظر را انتخاب کنید."
-        )
-        return ConversationHandler.END
-    
-    logger.info(f"Admin {update.effective_user.id} started movie design for {channel_name}.")
+    logger.info(f"Admin {update.effective_user.id} started movie design.")
     
     await update.message.reply_text(
-        f"📽 دیزاین پست فیلم برای {channel_name}\n\n"
+        "📽 دیزاین پست فیلم\n\n"
         "لطفاً پست فیلم خود را ارسال کنید.\n"
         "پست باید شامل تصویر و کپشن با اطلاعات فیلم باشد."
     )
@@ -421,7 +410,7 @@ async def cancel_movie_design(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 # --- Conversation Handler ---
 movie_design_handler = ConversationHandler(
-    entry_points=[MessageHandler(filters.Regex('^🎬 دیزاین پست فیلم$'), start_movie_design)],
+    entry_points=[MessageHandler(filters.Regex('^🎬 پست فیلم$'), start_movie_design)],
     states={
         WAITING_FOR_MOVIE_POST: [
             MessageHandler(filters.PHOTO, receive_movie_post)

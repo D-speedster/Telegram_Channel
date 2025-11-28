@@ -50,10 +50,12 @@ DEFAULT_PARSE_MODE = 'HTML'
 
 # --- Liara AI Configuration ---
 LIARA_API_KEY = os.getenv("LIARA_API_KEY")
-LIARA_BASE_URL = os.getenv("LIARA_BASE_URL", "https://ai.liara.ir/api/68ae0945c6240ade70e8e22b/v1")
+LIARA_BASE_URL = os.getenv("LIARA_BASE_URL")
 
 if not LIARA_API_KEY:
     print("Warning: LIARA_API_KEY is not set. AI post optimization will not work.")
+if not LIARA_BASE_URL:
+    print("Warning: LIARA_BASE_URL is not set. AI post optimization will not work.")
 
 # --- Banner Settings ---
 # Example of how you might want to list banners

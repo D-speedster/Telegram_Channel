@@ -2,7 +2,7 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 from src.utils.validators import admin_only
-from src.utils.keyboards import channel_selection_keyboard, channel_menu_keyboard, admin_panel_keyboard
+from src.utils.keyboards import main_menu_keyboard, admin_panel_keyboard
 
 # Enable logging
 logging.basicConfig(
@@ -10,20 +10,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-WELCOME_MESSAGE = "🤖 به پنل مدیریت ربات خوش آمدید!\n\n📺 لطفاً کانال مورد نظر خود را انتخاب کنید:"
+WELCOME_MESSAGE = "🤖 به پنل مدیریت ربات خوش آمدید!\n\nیکی از گزینه‌ها را انتخاب کنید:"
 
 @admin_only
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Sends a welcome message and channel selection keyboard."""
+    """Sends a welcome message and main menu keyboard."""
     user = update.effective_user
     logger.info(f"Admin {user.id} ({user.username}) started the bot.")
     
-    # پاک کردن کانال قبلی
-    context.user_data.pop('selected_channel', None)
-    
     await update.message.reply_text(
         WELCOME_MESSAGE,
-        reply_markup=channel_selection_keyboard()
+        reply_markup=main_menu_keyboard()
     )
 
 @admin_only

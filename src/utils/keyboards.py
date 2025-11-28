@@ -1,29 +1,24 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from typing import List
 
-# --- Channel Selection Keyboard ---
-def channel_selection_keyboard() -> ReplyKeyboardMarkup:
-    """Returns keyboard for selecting channel."""
-    keyboard = [
-        ["🎬 کانال فیلم"],
-        ["🇮🇹 کانال ایتالیا"],
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
-
-# --- Channel Menu Keyboard ---
-def channel_menu_keyboard(channel_name: str) -> ReplyKeyboardMarkup:
-    """Returns menu keyboard for specific channel."""
-    keyboard = [
-        ["➕ ساخت پست جدید", "🎬 دیزاین پست فیلم"],
-        ["⚙️ مدیریت انواع پست"],
-        ["🔙 بازگشت به انتخاب کانال"],
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
-
-# --- Main Menu Keyboard (Legacy - for backward compatibility) ---
+# --- Main Menu Keyboard ---
 def main_menu_keyboard() -> ReplyKeyboardMarkup:
     """Returns the main menu keyboard for admins."""
-    return channel_selection_keyboard()
+    keyboard = [
+        ["➕ ساخت پست هوشمند"],
+        ["🎬 پست فیلم"],
+    ]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
+
+# --- Channel Selection Keyboard (Legacy) ---
+def channel_selection_keyboard() -> ReplyKeyboardMarkup:
+    """Returns keyboard for selecting channel."""
+    return main_menu_keyboard()
+
+# --- Channel Menu Keyboard (Legacy) ---
+def channel_menu_keyboard(channel_name: str = None) -> ReplyKeyboardMarkup:
+    """Returns menu keyboard - now same as main menu."""
+    return main_menu_keyboard()
 
 # --- Dynamic Post Types Keyboard ---
 def post_types_keyboard(post_types: List[str]) -> InlineKeyboardMarkup:
