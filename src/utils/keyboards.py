@@ -32,10 +32,19 @@ def post_types_keyboard(post_types: List[str]) -> InlineKeyboardMarkup:
 
 # --- Confirmation Keyboard ---
 def confirm_keyboard() -> InlineKeyboardMarkup:
-    """Returns a confirmation keyboard (Yes/No)."""
+    """Returns a confirmation keyboard for AI posts."""
     keyboard = [
-        [InlineKeyboardButton("✅ ارسال شود", callback_data="confirm_send"),
-         InlineKeyboardButton("❌ خیر", callback_data="cancel_action")]
+        [InlineKeyboardButton("✅ تأیید", callback_data="ai_confirm"),
+         InlineKeyboardButton("❌ لغو", callback_data="ai_cancel")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+# --- Movie Confirmation Keyboard ---
+def movie_confirm_keyboard() -> InlineKeyboardMarkup:
+    """Returns a confirmation keyboard for movie posts."""
+    keyboard = [
+        [InlineKeyboardButton("✅ تأیید", callback_data="movie_confirm"),
+         InlineKeyboardButton("❌ لغو", callback_data="movie_cancel")]
     ]
     return InlineKeyboardMarkup(keyboard)
 

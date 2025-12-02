@@ -152,7 +152,7 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
     query = update.callback_query
     await query.answer()
     
-    if query.data == 'cancel_action':
+    if query.data == 'ai_cancel':
         await query.edit_message_reply_markup(reply_markup=None)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -260,7 +260,7 @@ ai_post_handler = ConversationHandler(
             )
         ],
         WAITING_FOR_CONFIRMATION: [
-            CallbackQueryHandler(handle_confirmation, pattern='^(confirm_send|cancel_action)$')
+            CallbackQueryHandler(handle_confirmation, pattern='^(ai_confirm|ai_cancel)$')
         ],
         WAITING_FOR_TAG: [
             MessageHandler(filters.TEXT & ~filters.COMMAND, receive_tag),

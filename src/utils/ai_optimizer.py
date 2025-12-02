@@ -7,27 +7,15 @@ from openai import OpenAI
 logger = logging.getLogger(__name__)
 
 # پرامپت ثابت و ساختاردهی شده
-PROMPT_TEMPLATE = """ویراستار تلگرام هستی. متن رو برای کانال بهینه کن.
+PROMPT_TEMPLATE = """پست تلگرام رو بهینه کن.
 
-ساختار:
-1. ایموجی + تیتر بولد کوتاه
-2. خط خالی
-3. متن روان و خودمونی (نه خیلی رسمی)
-4. لیست‌ها با 🔹
-
-فرمت HTML:
-- بولد: <b>متن</b>
-- هرگز ** نزن
-
-قوانین:
-- لحن صمیمی و خودمونی (مثل گفتگو)
-- محتوا رو تغییر نده
-- غلط‌ها رو تصحیح کن
-- خلاصه‌تر کن
-- یوزرنیم‌ها و تگ‌های @ رو حذف کن
-- لینک‌ها و آیدی کانال‌ها رو حذف کن
-
-فقط خروجی:
+کارها:
+1. تیتر جذاب با ایموجی
+2. قیمت‌ها رو بولد کن: **۱۵۰ یورو**
+3. تاریخ‌ها رو بولد کن: **۱۱ آذر**
+4. حذف کن: یوزرنیم (@)، لینک، فوتر کانال (Instagram/Telegram/YouTube)
+5. فشرده بمونه، طولانی نکن
+6. فقط فارسی بنویس
 
 {user_post_text}"""
 
@@ -92,6 +80,19 @@ class AIOptimizer:
             )
             
             optimized_text = completion.choices[0].message.content.strip()
+            
+            # تبدیل ** به <b> (چون مدل گاهی از مارک‌داون استفاده می‌کنه)
+            import re
+            optimized_text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', optimized_text)
+            optimized_text = re.sub(r'__(.+?)__', r'<i>\1</i>', optimized_text)
+            
+            # حذف فوتر کانال‌ها
+            optimized_text = re.sub(r'➖+.*?➖+', '', optimized_text, flags=re.DOTALL)
+            optimized_text = re.sub(r'🌐\s*Instagram.*', '', optimized_text, flags=re.IGNORECASE)
+            optimized_text = re.sub(r'🔵\s*Telegram.*', '', optimized_text, flags=re.IGNORECASE)
+            optimized_text = re.sub(r'🎞\s*YouTube.*', '', optimized_text, flags=re.IGNORECASE)
+            optimized_text = re.sub(r'\n{3,}', '\n\n', optimized_text)  # حذف خطوط خالی اضافی
+            optimized_text = optimized_text.strip()
             
             logger.info(f"Successfully optimized post (output length: {len(optimized_text)})")
             

@@ -9,7 +9,7 @@ from telegram.ext import (
     filters,
 )
 from src.utils.validators import admin_only
-from src.utils.keyboards import confirm_keyboard, main_menu_keyboard
+from src.utils.keyboards import movie_confirm_keyboard, main_menu_keyboard
 
 # Enable logging
 logging.basicConfig(
@@ -229,7 +229,7 @@ async def receive_movie_post(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.message.reply_photo(
         photo=photo.file_id,
         caption=f"📋 پیش‌نمایش پست اول:\n\n{formatted_caption}",
-        reply_markup=confirm_keyboard()
+        reply_markup=movie_confirm_keyboard()
     )
     
     logger.info(f"Admin {update.effective_user.id} submitted movie post for design.")
@@ -241,7 +241,9 @@ async def handle_first_confirm(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     await query.answer()
     
-    if query.data == 'cancel_action':
+    logger.info(f"handle_first_confirm called with data: {query.data}")
+    
+    if query.data == 'movie_cancel':
         await query.edit_message_text("❌ عملیات لغو شد.")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -252,18 +254,23 @@ async def handle_first_confirm(update: Update, context: ContextTypes.DEFAULT_TYP
         return ConversationHandler.END
     
     # تأیید شد، درخواست فایل
-    await query.edit_message_reply_markup(reply_markup=None)
+    try:
+        await query.edit_message_reply_markup(reply_markup=None)
+    except Exception as e:
+        logger.error(f"Error editing message: {e}")
     
     movie_info = context.user_data.get('movie_info', {})
     channel_link = context.user_data.get('channel_link', 'https://t.me/Film_Too_Film')
     file_caption = create_file_caption(movie_info, channel_link)
     context.user_data['file_caption'] = file_caption
     
+    logger.info(f"Requesting movie file from user")
+    
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"✅ پست اول تأیید شد.\n\n"
-             f"📋 کپشن پست دوم:\n\n{file_caption}\n\n"
-             f"📁 حالا لطفاً فایل فیلم خود را ارسال کنید."
+        text=f"✅ پوستر تأیید شد!\n\n"
+             f"📁 حالا فایل فیلم رو بفرست:\n"
+             f"(ویدیو یا فایل)"
     )
     
     return WAITING_FOR_FILE
@@ -298,13 +305,13 @@ async def receive_movie_file(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await update.message.reply_document(
                 document=context.user_data['movie_file'],
                 caption=f"📋 پیش‌نمایش پست دوم:\n\n{file_caption}",
-                reply_markup=confirm_keyboard()
+                reply_markup=movie_confirm_keyboard()
             )
         else:
             await update.message.reply_video(
                 video=context.user_data['movie_file'],
                 caption=f"📋 پیش‌نمایش پست دوم:\n\n{file_caption}",
-                reply_markup=confirm_keyboard()
+                reply_markup=movie_confirm_keyboard()
             )
     except Exception as e:
         logger.error(f"Error showing file preview: {e}")
@@ -312,7 +319,7 @@ async def receive_movie_file(update: Update, context: ContextTypes.DEFAULT_TYPE)
             f"📋 پیش‌نمایش پست دوم:\n\n{file_caption}\n\n"
             "✅ فایل دریافت شد.\n"
             "آیا می‌خواهید هر دو پست را دریافت کنید؟",
-            reply_markup=confirm_keyboard()
+            reply_markup=movie_confirm_keyboard()
         )
     
     logger.info(f"Admin {update.effective_user.id} submitted movie file.")
@@ -324,7 +331,7 @@ async def handle_final_confirm(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     await query.answer()
     
-    if query.data == 'cancel_action':
+    if query.data == 'movie_cancel':
         await query.edit_message_text("❌ عملیات لغو شد.")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -416,17 +423,17 @@ movie_design_handler = ConversationHandler(
             MessageHandler(filters.PHOTO, receive_movie_post)
         ],
         WAITING_FOR_CONFIRM_FIRST: [
-            CallbackQueryHandler(handle_first_confirm, pattern='^(confirm_send|cancel_action)$')
+            CallbackQueryHandler(handle_first_confirm, pattern='^(movie_confirm|movie_cancel)$')
         ],
         WAITING_FOR_FILE: [
             MessageHandler(filters.Document.ALL | filters.VIDEO, receive_movie_file)
         ],
         WAITING_FOR_FINAL_CONFIRM: [
-            CallbackQueryHandler(handle_final_confirm, pattern='^(confirm_send|cancel_action)$')
+            CallbackQueryHandler(handle_final_confirm, pattern='^(movie_confirm|movie_cancel)$')
         ]
     },
     fallbacks=[
-        CallbackQueryHandler(cancel_movie_design, pattern='^cancel_action$'),
+        CallbackQueryHandler(cancel_movie_design, pattern='^movie_cancel$'),
         MessageHandler(filters.Regex('^❌ لغو$'), cancel_movie_design)
     ],
     allow_reentry=True,
